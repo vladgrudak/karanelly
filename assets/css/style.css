@@ -533,6 +533,7 @@ body.menu-open.page-home .site-header {
   flex-direction: column;
   justify-content: flex-end;
   min-height: 640px;
+  min-height: 100vh;
   min-height: 100svh;
   padding-top: var(--header-h);
   color: var(--paper);
@@ -1715,10 +1716,6 @@ body.menu-open.page-home .site-header {
 
 /* Высокие узкие экраны: чуть больше воздуха в первом экране */
 @media (max-width: 767px) {
-  .hero {
-    min-height: 92svh;
-  }
-
   .hero__media img {
     object-position: 50% 62%;
   }
