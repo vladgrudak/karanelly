@@ -2,6 +2,12 @@
 AddDefaultCharset UTF-8
 DirectoryIndex index.html
 
+# Чистые адреса: старые ссылки с .html ведут на папки
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteRule ^(space|gallery|booking|contacts|privacy)\.html$ /$1/ [R=301,L]
+</IfModule>
+
 # Страница ошибки
 ErrorDocument 404 /404.html
 

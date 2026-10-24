@@ -1,5 +1,5 @@
 User-agent: *
 Allow: /
-Disallow: /privacy.html
+Disallow: /privacy/
 
 Sitemap: https://karanelly.space/sitemap.xml
