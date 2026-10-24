@@ -10,6 +10,7 @@ karanelly/
 ├── index.html          Главная (открывается по адресу /)
 ├── space/index.html    Пространство (о зале)      → /space/
 ├── gallery/index.html  Галерея + лайтбокс          → /gallery/
+├── events/index.html   Мероприятия и мастер-классы  → /events/
 ├── booking/index.html  Бронирование (виджет appEvent) → /booking/
 ├── contacts/index.html Контакты, карта и видео     → /contacts/
 ├── privacy/index.html  Политика конфиденциальности → /privacy/
