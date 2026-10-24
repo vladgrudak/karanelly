@@ -122,6 +122,37 @@
     window.setTimeout(hideSkeleton, 9000);
   }
 
+  /* ---------- Меню «Написать» ---------- */
+  var contactToggle = doc.querySelector("[data-contact-toggle]");
+  var contactList = doc.querySelector("[data-contact-list]");
+
+  if (contactToggle && contactList) {
+    var closeContactMenu = function () {
+      contactToggle.setAttribute("aria-expanded", "false");
+      contactList.hidden = true;
+    };
+
+    contactToggle.addEventListener("click", function (event) {
+      event.stopPropagation();
+      var isOpen = contactToggle.getAttribute("aria-expanded") === "true";
+      contactToggle.setAttribute("aria-expanded", String(!isOpen));
+      contactList.hidden = isOpen;
+    });
+
+    doc.addEventListener("click", function (event) {
+      if (!contactList.hidden && !event.target.closest(".contact-menu")) {
+        closeContactMenu();
+      }
+    });
+
+    doc.addEventListener("keydown", function (event) {
+      if (event.key === "Escape" && !contactList.hidden) {
+        closeContactMenu();
+        contactToggle.focus();
+      }
+    });
+  }
+
   /* ---------- Текущий год в подвале ---------- */
   Array.prototype.forEach.call(doc.querySelectorAll("[data-year]"), function (el) {
     el.textContent = String(new Date().getFullYear());
