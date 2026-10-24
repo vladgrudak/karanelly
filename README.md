@@ -26,7 +26,7 @@ karanelly/
     │   └── gallery.js  Лайтбокс: клавиатура, свайпы, фокус
     ├── fonts/          Cormorant Garamond + Golos Text (woff2, кириллица)
     ├── img/            WebP в трёх размерах, OG-картинка, иконки
-    └── video/          Видео-маршрут: WebM + MP4 + постер
+    └── video/          Видео-маршрут: MP4 + постер
 ```
 
 ## Локальный просмотр
@@ -68,11 +68,14 @@ python3 -m http.server 8000
 
 Ролик `How_to_find_us.mov` (исходник 80 МБ, HEVC, 816×1326, 46 с) перекодирован для веба:
 
-| Файл | Формат | Размер | Для кого |
-|---|---|---|---|
-| `assets/video/how-to-find.webm` | VP9, 720×1170, 30 fps | 3,8 МБ | Chrome, Firefox, Edge |
-| `assets/video/how-to-find.mp4` | H.264, 720×1170, 30 fps | 9,1 МБ | Safari, старые устройства |
-| `assets/video/how-to-find-poster.jpg` | JPEG 720×1170 | 64 КБ | превью до воспроизведения |
+| Файл | Формат | Размер |
+|---|---|---|
+| `assets/video/how-to-find.mp4` | H.264, 720×1170, 30 fps | 7,2 МБ |
+| `assets/video/how-to-find-poster.jpg` | JPEG 720×1170 | 64 КБ |
+
+Формат один — MP4 с H.264: его играют все браузеры и телефоны. WebM/VP9 пробовал,
+но на этом материале (зерно, пасмурная погода) он вышел тяжелее MP4, поэтому оставил
+только MP4 — меньше файлов, проще поддерживать.
 
 Звук удалён: в исходнике дорожка была пустой (средний уровень −91 dB), все подсказки
 впечатаны в кадр. Видео грузится только при нажатии (`preload="metadata"` + постер),
@@ -81,10 +84,8 @@ python3 -m http.server 8000
 Если будете менять ролик — держите те же пропорции 720×1170 и кодируйте так:
 
 ```bash
-ffmpeg -i new.mov -vf "scale=720:-2,fps=30" -c:v libx264 -crf 28 -preset slow \
+ffmpeg -i new.mov -vf "scale=720:-2,fps=30" -c:v libx264 -crf 30 -preset slow \
   -pix_fmt yuv420p -movflags +faststart -an how-to-find.mp4
-ffmpeg -i new.mov -vf "scale=720:-2,fps=30" -c:v libvpx-vp9 -crf 34 -b:v 0 \
-  -row-mt 1 -cpu-used 2 -an how-to-find.webm
 ```
 
 ## Виджет бронирования
