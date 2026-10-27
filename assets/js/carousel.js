@@ -85,32 +85,47 @@
   function startAutoplay() {
     if (!mobileQuery.matches || !("IntersectionObserver" in window) || observer) return;
 
+    var active = [];
+
+    function playCard(card) {
+      var video = card.querySelector("video");
+      if (!video) return;
+      pauseOthers(video);
+      video.muted = true;
+      video.loop = true;
+      video.controls = false;
+      card.classList.remove("is-unmuted");
+
+      var promise = video.play();
+      if (promise && typeof promise.then === "function") {
+        promise
+          .then(function () { card.classList.add("is-autoplaying"); })
+          .catch(function () { card.classList.remove("is-autoplaying"); });
+      } else {
+        card.classList.add("is-autoplaying");
+      }
+    }
+
     observer = new IntersectionObserver(function (entries) {
       entries.forEach(function (entry) {
         var card = entry.target;
-        var video = card.querySelector("video");
-        if (!video) return;
+        var index = active.indexOf(card);
 
-        if (entry.isIntersecting) {
-          pauseOthers(video);
-          video.muted = true;
-          video.loop = true;
-          video.controls = false;
-          card.classList.remove("is-unmuted");
-
-          var promise = video.play();
-          if (promise && typeof promise.then === "function") {
-            promise
-              .then(function () { card.classList.add("is-autoplaying"); })
-              .catch(function () { card.classList.remove("is-autoplaying"); });
-          } else {
-            card.classList.add("is-autoplaying");
-          }
-        } else {
-          video.pause();
+        if (entry.isIntersecting && index === -1) {
+          active.push(card);
+        } else if (!entry.isIntersecting && index !== -1) {
+          active.splice(index, 1);
+          var video = card.querySelector("video");
+          if (video) video.pause();
           card.classList.remove("is-autoplaying");
         }
       });
+
+      if (!active.length) return;
+
+      /* Играет самый левый из видимых роликов */
+      active.sort(function (a, b) { return cards.indexOf(a) - cards.indexOf(b); });
+      playCard(active[0]);
     }, { threshold: 0.65 });
 
     cards.forEach(function (card) { observer.observe(card); });
