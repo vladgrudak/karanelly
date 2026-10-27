@@ -1,4 +1,5 @@
-/* KaraNelly Space — карусель вертикальных видео на странице мероприятий. */
+/* KaraNelly Space — карусель вертикальных видео на странице мероприятий.
+   Звук — один на всю карусель: включили на одном ролике, звучат все. */
 (function () {
   "use strict";
 
@@ -7,7 +8,37 @@
 
   var prev = document.querySelector("[data-carousel-prev]");
   var next = document.querySelector("[data-carousel-next]");
+  var soundToggle = document.querySelector("[data-sound-toggle]");
+  var soundLabel = document.querySelector("[data-sound-label]");
   var cards = Array.prototype.slice.call(document.querySelectorAll("[data-video-card]"));
+
+  var soundOn = false;
+
+  function applySound() {
+    cards.forEach(function (card) {
+      var video = card.querySelector("video");
+      if (video) video.muted = !soundOn;
+    });
+
+    if (soundToggle) {
+      soundToggle.classList.toggle("is-on", soundOn);
+      soundToggle.setAttribute("aria-pressed", String(soundOn));
+      soundToggle.setAttribute("aria-label", soundOn
+        ? "Выключить звук во всех видео"
+        : "Включить звук во всех видео");
+    }
+
+    if (soundLabel) {
+      soundLabel.textContent = soundOn ? "Звук включён" : "Звук выключен";
+    }
+  }
+
+  if (soundToggle) {
+    soundToggle.addEventListener("click", function () {
+      soundOn = !soundOn;
+      applySound();
+    });
+  }
 
   function step() {
     var card = track.querySelector(".video-card");
@@ -28,14 +59,14 @@
     });
   }
 
-  /* Останавливает всё, кроме переданного ролика, и снимает служебные классы */
+  /* Останавливает всё, кроме переданного ролика */
   function pauseOthers(except) {
     cards.forEach(function (card) {
       var video = card.querySelector("video");
       if (!video || video === except) return;
       video.pause();
       video.controls = false;
-      card.classList.remove("is-playing", "is-autoplaying", "is-unmuted");
+      card.classList.remove("is-playing", "is-autoplaying");
     });
   }
 
@@ -44,30 +75,20 @@
     if (!video) return;
 
     var playBtn = card.querySelector(".video-card__play");
-    var soundBtn = card.querySelector("[data-sound]");
 
-    /* Ручной запуск: со звуком и нативными кнопками */
+    /* Ручной запуск: сразу включаем общий звук */
     if (playBtn) {
       playBtn.addEventListener("click", function () {
+        soundOn = true;
+        applySound();
+
         pauseOthers(video);
-        video.muted = false;
         video.loop = false;
         video.controls = true;
         card.classList.add("is-playing");
-        card.classList.remove("is-unmuted");
+
         var promise = video.play();
         if (promise && typeof promise.catch === "function") promise.catch(function () {});
-      });
-    }
-
-    /* Автовоспроизведение идёт без звука — эта кнопка его включает */
-    if (soundBtn) {
-      soundBtn.addEventListener("click", function (event) {
-        event.stopPropagation();
-        video.muted = !video.muted;
-        card.classList.toggle("is-unmuted", !video.muted);
-        soundBtn.setAttribute("aria-pressed", String(!video.muted));
-        soundBtn.setAttribute("aria-label", video.muted ? "Включить звук" : "Выключить звук");
       });
     }
 
@@ -82,29 +103,42 @@
   var mobileQuery = window.matchMedia("(max-width: 899px)");
   var observer = null;
 
+  function playCard(card) {
+    var video = card.querySelector("video");
+    if (!video) return;
+
+    pauseOthers(video);
+    video.loop = true;
+    video.controls = false;
+    video.muted = !soundOn;
+
+    var promise = video.play();
+
+    function onFail() {
+      card.classList.remove("is-autoplaying");
+      /* Браузер не дал автозвук — откатываемся на беззвучный режим */
+      if (soundOn) {
+        soundOn = false;
+        applySound();
+        video.muted = true;
+        var retry = video.play();
+        if (retry && typeof retry.then === "function") {
+          retry.then(function () { card.classList.add("is-autoplaying"); }).catch(function () {});
+        }
+      }
+    }
+
+    if (promise && typeof promise.then === "function") {
+      promise.then(function () { card.classList.add("is-autoplaying"); }).catch(onFail);
+    } else {
+      card.classList.add("is-autoplaying");
+    }
+  }
+
   function startAutoplay() {
     if (!mobileQuery.matches || !("IntersectionObserver" in window) || observer) return;
 
     var active = [];
-
-    function playCard(card) {
-      var video = card.querySelector("video");
-      if (!video) return;
-      pauseOthers(video);
-      video.muted = true;
-      video.loop = true;
-      video.controls = false;
-      card.classList.remove("is-unmuted");
-
-      var promise = video.play();
-      if (promise && typeof promise.then === "function") {
-        promise
-          .then(function () { card.classList.add("is-autoplaying"); })
-          .catch(function () { card.classList.remove("is-autoplaying"); });
-      } else {
-        card.classList.add("is-autoplaying");
-      }
-    }
 
     observer = new IntersectionObserver(function (entries) {
       entries.forEach(function (entry) {
@@ -140,14 +174,14 @@
       var video = card.querySelector("video");
       if (video) {
         video.pause();
-        video.muted = false;
         video.loop = false;
         video.controls = false;
       }
-      card.classList.remove("is-autoplaying", "is-unmuted");
+      card.classList.remove("is-autoplaying");
     });
   }
 
+  applySound();
   startAutoplay();
 
   if (typeof mobileQuery.addEventListener === "function") {
