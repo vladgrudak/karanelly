@@ -27,7 +27,7 @@ karanelly/
     │   └── gallery.js  Лайтбокс: клавиатура, свайпы, фокус
     ├── fonts/          Cormorant Garamond + Golos Text (woff2, кириллица)
     ├── img/            WebP в трёх размерах, OG-картинка, иконки
-    └── video/          Видео-маршрут: MP4 + постер
+    └── video/          Видео: маршрут (MP4 + постер) и карусель мастер-классов в events/
 ```
 
 ## Локальный просмотр
@@ -89,6 +89,24 @@ python3 -m http.server 8000
 ```bash
 ffmpeg -i new.mov -vf "scale=720:-2,fps=30" -c:v libx264 -crf 30 -preset slow \
   -pix_fmt yuv420p -movflags +faststart -an how-to-find.mp4
+```
+
+## Видео с мастер-классов
+
+Пять вертикальных роликов для карусели на `/events/` лежат в `assets/video/events/`
+(`ev-video-01…05.mp4` + постеры). Все перекодированы в 720×1280, H.264, 30 fps, без
+метаданных, со `faststart`.
+
+Звук выровнен по громкости: исходники расходились на 19 дБ (−34…−15 LUFS), все
+приведены к −16 LUFS через двухпроходный `loudnorm` (linear), AAC 128 kbps.
+
+Если добавляете ролик — сначала измерьте, потом кодируйте с измеренными значениями:
+
+```bash
+ffmpeg -i in.mp4 -af loudnorm=I=-16:TP=-1.5:LRA=11:print_format=json -vn -f null -
+ffmpeg -i in.mp4 -vf "scale=720:1280:force_original_aspect_ratio=decrease,pad=720:1280:(ow-iw)/2:(oh-ih)/2,fps=30" \
+  -c:v libx264 -crf 30 -preset slow -pix_fmt yuv420p -movflags +faststart \
+  -c:a aac -b:a 128k -ar 44100 -ac 2 -map_metadata -1 out.mp4
 ```
 
 ## Виджет бронирования

@@ -2047,3 +2047,121 @@ body.menu-open.page-home .site-header {
     grid-template-columns: repeat(4, 1fr);
   }
 }
+
+/* --------------------------------------------------------------------------
+   26. Карусель вертикальных видео
+   -------------------------------------------------------------------------- */
+.video-carousel {
+  position: relative;
+}
+
+.video-carousel__track {
+  display: flex;
+  gap: 1rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  margin-inline: calc(var(--gutter) * -1);
+  padding-inline: var(--gutter);
+  scroll-padding-inline: var(--gutter);
+  padding-bottom: 0.5rem;
+}
+
+.video-carousel__track::-webkit-scrollbar {
+  display: none;
+}
+
+.video-card {
+  position: relative;
+  flex: 0 0 auto;
+  width: clamp(228px, 66vw, 292px);
+  margin: 0;
+  scroll-snap-align: start;
+  overflow: hidden;
+  background: #0e0b08;
+}
+
+.video-card__media {
+  display: block;
+  width: 100%;
+  aspect-ratio: 9 / 16;
+  object-fit: cover;
+  background: #0e0b08;
+}
+
+.video-card__play {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  border: 0;
+  cursor: pointer;
+  background: linear-gradient(180deg, rgba(14, 11, 8, 0.02) 40%, rgba(14, 11, 8, 0.38) 100%);
+  transition: opacity 0.3s var(--ease);
+}
+
+.video-card__play span {
+  display: grid;
+  place-items: center;
+  width: 62px;
+  height: 62px;
+  padding-left: 3px;
+  border: 1px solid rgba(247, 242, 234, 0.7);
+  border-radius: 50%;
+  background: rgba(14, 11, 8, 0.32);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  color: var(--paper);
+  transition: background-color 0.3s var(--ease), color 0.3s var(--ease),
+    border-color 0.3s var(--ease);
+}
+
+.video-card:hover .video-card__play span,
+.video-card__play:focus-visible span {
+  background: var(--paper);
+  border-color: var(--paper);
+  color: var(--ink);
+}
+
+.video-card.is-playing .video-card__play {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.video-carousel__nav {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 1.25rem;
+}
+
+.video-carousel__arrow {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  color: var(--ink);
+  transition: background-color 0.3s var(--ease), border-color 0.3s var(--ease),
+    color 0.3s var(--ease);
+}
+
+.video-carousel__arrow:hover {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper);
+}
+
+@media (min-width: 900px) {
+  .video-carousel__track {
+    margin-inline: 0;
+    padding-inline: 0;
+    scroll-padding-inline: 0;
+  }
+
+  .video-card {
+    width: clamp(240px, 22vw, 300px);
+  }
+}
