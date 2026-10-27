@@ -92,6 +92,13 @@
       });
     }
 
+    /* Тап по автовоспроизводящейся карточке — пауза (в т.ч. требование доступности) */
+    card.addEventListener("click", function () {
+      if (!card.classList.contains("is-autoplaying")) return;
+      video.pause();
+      card.classList.remove("is-autoplaying");
+    });
+
     video.addEventListener("ended", function () {
       card.classList.remove("is-playing");
       video.controls = false;
