@@ -28,29 +28,48 @@
     });
   }
 
-  /* Одно видео за раз: запуск нового останавливает остальные */
+  /* Останавливает всё, кроме переданного ролика, и снимает служебные классы */
+  function pauseOthers(except) {
+    cards.forEach(function (card) {
+      var video = card.querySelector("video");
+      if (!video || video === except) return;
+      video.pause();
+      video.controls = false;
+      card.classList.remove("is-playing", "is-autoplaying", "is-unmuted");
+    });
+  }
+
   cards.forEach(function (card) {
     var video = card.querySelector("video");
+    if (!video) return;
+
     var playBtn = card.querySelector(".video-card__play");
-    if (!video || !playBtn) return;
+    var soundBtn = card.querySelector("[data-sound]");
 
-    playBtn.addEventListener("click", function () {
-      cards.forEach(function (other) {
-        var otherVideo = other.querySelector("video");
-        if (otherVideo && otherVideo !== video) otherVideo.pause();
+    /* Ручной запуск: со звуком и нативными кнопками */
+    if (playBtn) {
+      playBtn.addEventListener("click", function () {
+        pauseOthers(video);
+        video.muted = false;
+        video.loop = false;
+        video.controls = true;
+        card.classList.add("is-playing");
+        card.classList.remove("is-unmuted");
+        var promise = video.play();
+        if (promise && typeof promise.catch === "function") promise.catch(function () {});
       });
+    }
 
-      video.controls = true;
-      var playing = video.play();
-      if (playing && typeof playing.catch === "function") {
-        playing.catch(function () { /* автоплей запрещён — останутся нативные кнопки */ });
-      }
-    });
-
-    video.addEventListener("play", function () {
-      card.classList.add("is-playing");
-      video.controls = true;
-    });
+    /* Автовоспроизведение идёт без звука — эта кнопка его включает */
+    if (soundBtn) {
+      soundBtn.addEventListener("click", function (event) {
+        event.stopPropagation();
+        video.muted = !video.muted;
+        card.classList.toggle("is-unmuted", !video.muted);
+        soundBtn.setAttribute("aria-pressed", String(!video.muted));
+        soundBtn.setAttribute("aria-label", video.muted ? "Включить звук" : "Выключить звук");
+      });
+    }
 
     video.addEventListener("ended", function () {
       card.classList.remove("is-playing");
@@ -58,4 +77,68 @@
       video.currentTime = 0;
     });
   });
+
+  /* Телефон: ролик включается сам, когда попадает в кадр */
+  var mobileQuery = window.matchMedia("(max-width: 899px)");
+  var observer = null;
+
+  function startAutoplay() {
+    if (!mobileQuery.matches || !("IntersectionObserver" in window) || observer) return;
+
+    observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        var card = entry.target;
+        var video = card.querySelector("video");
+        if (!video) return;
+
+        if (entry.isIntersecting) {
+          pauseOthers(video);
+          video.muted = true;
+          video.loop = true;
+          video.controls = false;
+          card.classList.remove("is-unmuted");
+
+          var promise = video.play();
+          if (promise && typeof promise.then === "function") {
+            promise
+              .then(function () { card.classList.add("is-autoplaying"); })
+              .catch(function () { card.classList.remove("is-autoplaying"); });
+          } else {
+            card.classList.add("is-autoplaying");
+          }
+        } else {
+          video.pause();
+          card.classList.remove("is-autoplaying");
+        }
+      });
+    }, { threshold: 0.65 });
+
+    cards.forEach(function (card) { observer.observe(card); });
+  }
+
+  function stopAutoplay() {
+    if (observer) {
+      observer.disconnect();
+      observer = null;
+    }
+    cards.forEach(function (card) {
+      var video = card.querySelector("video");
+      if (video) {
+        video.pause();
+        video.muted = false;
+        video.loop = false;
+        video.controls = false;
+      }
+      card.classList.remove("is-autoplaying", "is-unmuted");
+    });
+  }
+
+  startAutoplay();
+
+  if (typeof mobileQuery.addEventListener === "function") {
+    mobileQuery.addEventListener("change", function (event) {
+      if (event.matches) startAutoplay();
+      else stopAutoplay();
+    });
+  }
 })();

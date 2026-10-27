@@ -2075,7 +2075,7 @@ body.menu-open.page-home .site-header {
 .video-card {
   position: relative;
   flex: 0 0 auto;
-  width: clamp(228px, 66vw, 292px);
+  width: clamp(150px, 42vw, 176px);
   margin: 0;
   scroll-snap-align: start;
   overflow: hidden;
@@ -2085,6 +2085,7 @@ body.menu-open.page-home .site-header {
 .video-card__media {
   display: block;
   width: 100%;
+  height: auto;
   aspect-ratio: 9 / 16;
   object-fit: cover;
   background: #0e0b08;
@@ -2124,9 +2125,51 @@ body.menu-open.page-home .site-header {
   color: var(--ink);
 }
 
-.video-card.is-playing .video-card__play {
+.video-card.is-playing .video-card__play,
+.video-card.is-autoplaying .video-card__play {
   opacity: 0;
   pointer-events: none;
+}
+
+/* Кнопка звука — только для автовоспроизведения на телефоне */
+.video-card__sound {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  z-index: 2;
+  display: none;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid rgba(247, 242, 234, 0.45);
+  border-radius: 50%;
+  background: rgba(14, 11, 8, 0.55);
+  color: var(--paper);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  transition: background-color 0.25s var(--ease), border-color 0.25s var(--ease);
+}
+
+.video-card.is-autoplaying .video-card__sound {
+  display: grid;
+}
+
+.video-card__sound:hover {
+  background: rgba(247, 242, 234, 0.9);
+  border-color: var(--paper);
+  color: var(--ink);
+}
+
+.video-card__sound-on {
+  display: none;
+}
+
+.video-card.is-unmuted .video-card__sound-off {
+  display: none;
+}
+
+.video-card.is-unmuted .video-card__sound-on {
+  display: block;
 }
 
 .video-carousel__nav {
@@ -2162,6 +2205,6 @@ body.menu-open.page-home .site-header {
   }
 
   .video-card {
-    width: clamp(240px, 22vw, 300px);
+    width: 200px;
   }
 }
