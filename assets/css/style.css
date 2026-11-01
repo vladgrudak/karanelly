@@ -2164,7 +2164,7 @@ body.menu-open.page-home .site-header {
   padding: 0;
   border: 0;
   border-radius: 999px;
-  background: rgba(27, 23, 18, 0.22);
+  background: rgba(174, 81, 44, 0.4);
   cursor: pointer;
   overflow: hidden;
   transition: width 0.45s var(--ease), height 0.45s var(--ease),
@@ -2178,24 +2178,24 @@ body.menu-open.page-home .site-header {
 }
 
 .reel-dot:hover {
-  background: var(--ink);
+  background: var(--rust);
 }
 
 .reel-dot.is-done {
-  background: var(--ink);
+  background: var(--rust);
 }
 
 .reel-dot.is-active {
   width: 56px;
   height: 4px;
-  background: rgba(27, 23, 18, 0.16);
+  background: rgba(174, 81, 44, 0.2);
 }
 
 .reel-dot__fill {
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  background: var(--ink);
+  background: var(--rust);
   transform: scaleX(0);
   transform-origin: left center;
 }
