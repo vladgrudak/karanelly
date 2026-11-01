@@ -1,19 +1,40 @@
-/* KaraNelly Space — карусель вертикальных видео на странице мероприятий.
-   Звук — один на всю карусель: включили на одном ролике, звучат все. */
+/* KaraNelly Space — лента видео в стиле Apple «highlights».
+   Тап по кнопке запускает показ: ролики играют по очереди, под лентой
+   растёт полоска прогресса, которая на завершённом ролике сжимается в точку.
+   На телефоне показ включается сам, когда лента попадает в кадр. */
 (function () {
   "use strict";
 
   var track = document.querySelector("[data-carousel-track]");
   if (!track) return;
 
-  var prev = document.querySelector("[data-carousel-prev]");
-  var next = document.querySelector("[data-carousel-next]");
+  var cards = Array.prototype.slice.call(document.querySelectorAll("[data-video-card]"));
+  var dots = Array.prototype.slice.call(document.querySelectorAll("[data-go]"));
+  var toggle = document.querySelector("[data-reel-toggle]");
   var soundToggle = document.querySelector("[data-sound-toggle]");
   var soundLabel = document.querySelector("[data-sound-label]");
-  var cards = Array.prototype.slice.call(document.querySelectorAll("[data-video-card]"));
 
+  var index = 0;
+  var running = false;
+  var userPaused = false;
+  var raf = 0;
+  var suppressScroll = false;
+  var scrollTimer = 0;
   var soundOn = false;
 
+  function videoAt(i) {
+    var card = cards[i];
+    return card ? card.querySelector("video") : null;
+  }
+
+  function step() {
+    var card = cards[0];
+    if (!card) return 300;
+    var gap = parseFloat(getComputedStyle(track).columnGap || getComputedStyle(track).gap) || 16;
+    return card.getBoundingClientRect().width + gap;
+  }
+
+  /* ---------- Звук: один на всю ленту ---------- */
   function applySound() {
     cards.forEach(function (card) {
       var video = card.querySelector("video");
@@ -27,10 +48,7 @@
         ? "Выключить звук во всех видео"
         : "Включить звук во всех видео");
     }
-
-    if (soundLabel) {
-      soundLabel.textContent = soundOn ? "Звук включён" : "Звук выключен";
-    }
+    if (soundLabel) soundLabel.textContent = soundOn ? "Звук включён" : "Звук выключен";
   }
 
   if (soundToggle) {
@@ -40,161 +58,176 @@
     });
   }
 
-  function step() {
-    var card = track.querySelector(".video-card");
-    if (!card) return 300;
-    var gap = parseFloat(getComputedStyle(track).columnGap || getComputedStyle(track).gap) || 16;
-    return card.getBoundingClientRect().width + gap;
-  }
-
-  if (prev) {
-    prev.addEventListener("click", function () {
-      track.scrollBy({ left: -step(), behavior: "smooth" });
+  /* ---------- Индикаторы ---------- */
+  function updateDots() {
+    dots.forEach(function (dot, i) {
+      dot.classList.toggle("is-active", i === index);
+      dot.classList.toggle("is-done", i < index);
+      var fill = dot.querySelector(".reel-dot__fill");
+      if (fill) fill.style.transform = "scaleX(" + (i === index ? progress : i < index ? 1 : 0) + ")";
     });
   }
 
-  if (next) {
-    next.addEventListener("click", function () {
-      track.scrollBy({ left: step(), behavior: "smooth" });
-    });
+  var progress = 0;
+
+  function toggleUI() {
+    if (!toggle) return;
+    toggle.classList.toggle("is-running", running);
+    toggle.setAttribute("aria-label", running ? "Остановить показ" : "Смотреть ролики");
   }
 
-  /* Останавливает всё, кроме переданного ролика */
-  function pauseOthers(except) {
-    cards.forEach(function (card) {
+  /* ---------- Показ ---------- */
+  function scrollToIndex(i) {
+    suppressScroll = true;
+    track.scrollTo({ left: i * step(), behavior: "smooth" });
+    window.setTimeout(function () { suppressScroll = false; }, 650);
+  }
+
+  function playIndex(i) {
+    index = Math.max(0, Math.min(cards.length - 1, i));
+    progress = 0;
+
+    cards.forEach(function (card, j) {
       var video = card.querySelector("video");
-      if (!video || video === except) return;
-      video.pause();
-      video.controls = false;
-      card.classList.remove("is-playing", "is-autoplaying");
+      if (!video) return;
+      if (j !== index) video.pause();
     });
-  }
 
-  cards.forEach(function (card) {
-    var video = card.querySelector("video");
-    if (!video) return;
-
-    var playBtn = card.querySelector(".video-card__play");
-
-    /* Ручной запуск: сразу включаем общий звук */
-    if (playBtn) {
-      playBtn.addEventListener("click", function () {
-        soundOn = true;
-        applySound();
-
-        pauseOthers(video);
-        video.loop = false;
-        video.controls = true;
-        card.classList.add("is-playing");
-
-        var promise = video.play();
-        if (promise && typeof promise.catch === "function") promise.catch(function () {});
-      });
+    var video = videoAt(index);
+    if (video) {
+      video.currentTime = 0;
+      video.muted = !soundOn;
+      video.loop = false;
+      video.controls = false;
+      var promise = video.play();
+      if (promise && typeof promise.catch === "function") promise.catch(function () {});
     }
 
-    /* Тап по автовоспроизводящейся карточке — пауза (в т.ч. требование доступности) */
-    card.addEventListener("click", function () {
-      if (!card.classList.contains("is-autoplaying")) return;
-      video.pause();
-      card.classList.remove("is-autoplaying");
-    });
+    updateDots();
+    scrollToIndex(index);
 
-    video.addEventListener("ended", function () {
-      card.classList.remove("is-playing");
-      video.controls = false;
-      video.currentTime = 0;
+    /* Заранее просим метаданные следующего ролика — переключение плавнее */
+    var next = videoAt((index + 1) % cards.length);
+    if (next) next.preload = "metadata";
+  }
+
+  function start() {
+    if (running) return;
+    running = true;
+    userPaused = false;
+    toggleUI();
+    playIndex(index);
+    cancelAnimationFrame(raf);
+    tick();
+  }
+
+  function pauseSequence() {
+    running = false;
+    cancelAnimationFrame(raf);
+    var video = videoAt(index);
+    if (video) video.pause();
+    toggleUI();
+  }
+
+  function stop() {
+    userPaused = true;
+    pauseSequence();
+  }
+
+  function tick() {
+    if (!running) return;
+    var video = videoAt(index);
+    if (video && video.duration) {
+      progress = Math.min(1, video.currentTime / video.duration);
+      var dot = dots[index];
+      var fill = dot && dot.querySelector(".reel-dot__fill");
+      if (fill) fill.style.transform = "scaleX(" + progress + ")";
+    }
+    raf = requestAnimationFrame(tick);
+  }
+
+  if (toggle) {
+    toggle.addEventListener("click", function () {
+      if (running) stop();
+      else start();
+    });
+  }
+
+  /* Клик по точке — переход к ролику */
+  dots.forEach(function (dot, i) {
+    dot.addEventListener("click", function () {
+      index = i;
+      progress = 0;
+      updateDots();
+      if (running) playIndex(i);
+      else scrollToIndex(i);
     });
   });
 
-  /* Телефон: ролик включается сам, когда попадает в кадр */
-  var mobileQuery = window.matchMedia("(max-width: 899px)");
-  var observer = null;
+  /* Завершение ролика — следующий по кругу.
+     Слушаем и ended, и timeupdate: в некоторых браузерах ended не приходит. */
+  var advancing = false;
 
-  function playCard(card) {
+  function advanceFrom(i) {
+    if (advancing) return;
+    advancing = true;
+    running = true;
+    if (dots[i]) dots[i].classList.add("is-done");
+
+    window.setTimeout(function () {
+      advancing = false;
+      if (!running) return;
+      playIndex((i + 1) % cards.length);
+    }, 220);
+  }
+
+  cards.forEach(function (card, i) {
     var video = card.querySelector("video");
     if (!video) return;
 
-    pauseOthers(video);
-    video.loop = true;
-    video.controls = false;
-    video.muted = !soundOn;
+    video.addEventListener("ended", function () {
+      if (!running || i !== index || advancing) return;
+      advanceFrom(i);
+    });
 
-    var promise = video.play();
+    video.addEventListener("timeupdate", function () {
+      if (!running || i !== index || advancing) return;
+      if (video.duration && video.currentTime >= video.duration - 0.12) advanceFrom(i);
+    });
+  });
 
-    function onFail() {
-      card.classList.remove("is-autoplaying");
-      /* Браузер не дал автозвук — откатываемся на беззвучный режим */
-      if (soundOn) {
-        soundOn = false;
-        applySound();
-        video.muted = true;
-        var retry = video.play();
-        if (retry && typeof retry.then === "function") {
-          retry.then(function () { card.classList.add("is-autoplaying"); }).catch(function () {});
-        }
-      }
-    }
+  /* Ручная прокрутка ленты синхронизирует активный ролик */
+  track.addEventListener("scroll", function () {
+    window.clearTimeout(scrollTimer);
+    scrollTimer = window.setTimeout(function () {
+      if (suppressScroll) return;
+      var i = Math.max(0, Math.min(cards.length - 1, Math.round(track.scrollLeft / step())));
+      if (i === index) return;
+      index = i;
+      progress = 0;
+      updateDots();
+      if (running) playIndex(i);
+    }, 150);
+  });
 
-    if (promise && typeof promise.then === "function") {
-      promise.then(function () { card.classList.add("is-autoplaying"); }).catch(onFail);
-    } else {
-      card.classList.add("is-autoplaying");
-    }
-  }
+  /* ---------- Автозапуск на телефоне ---------- */
+  var mobile = window.matchMedia("(max-width: 899px)");
+  var carousel = document.querySelector("[data-carousel]");
 
-  function startAutoplay() {
-    if (!mobileQuery.matches || !("IntersectionObserver" in window) || observer) return;
-
-    var active = [];
-
-    observer = new IntersectionObserver(function (entries) {
+  if (carousel && "IntersectionObserver" in window) {
+    var observer = new IntersectionObserver(function (entries) {
       entries.forEach(function (entry) {
-        var card = entry.target;
-        var index = active.indexOf(card);
-
-        if (entry.isIntersecting && index === -1) {
-          active.push(card);
-        } else if (!entry.isIntersecting && index !== -1) {
-          active.splice(index, 1);
-          var video = card.querySelector("video");
-          if (video) video.pause();
-          card.classList.remove("is-autoplaying");
+        if (entry.isIntersecting) {
+          if (mobile.matches && !userPaused && !running) start();
+        } else if (running) {
+          pauseSequence();
         }
       });
+    }, { threshold: 0.5 });
 
-      if (!active.length) return;
-
-      /* Играет самый левый из видимых роликов */
-      active.sort(function (a, b) { return cards.indexOf(a) - cards.indexOf(b); });
-      playCard(active[0]);
-    }, { threshold: 0.65 });
-
-    cards.forEach(function (card) { observer.observe(card); });
-  }
-
-  function stopAutoplay() {
-    if (observer) {
-      observer.disconnect();
-      observer = null;
-    }
-    cards.forEach(function (card) {
-      var video = card.querySelector("video");
-      if (video) {
-        video.pause();
-        video.loop = false;
-        video.controls = false;
-      }
-      card.classList.remove("is-autoplaying");
-    });
+    observer.observe(carousel);
   }
 
   applySound();
-  startAutoplay();
-
-  if (typeof mobileQuery.addEventListener === "function") {
-    mobileQuery.addEventListener("change", function (event) {
-      if (event.matches) startAutoplay();
-      else stopAutoplay();
-    });
-  }
+  updateDots();
 })();

@@ -212,7 +212,7 @@
             <p class="eyebrow">Видео</p>
             <h2 class="display" id="videos-title" style="margin-top: 1.1rem;" data-reveal>Как это выглядит в движении</h2>
           </div>
-          <p class="section-head__aside" data-reveal data-delay="120">Шесть коротких роликов с прошедших вечеров. На телефоне листайте в сторону — видео включается само. На компьютере — стрелками.</p>
+          <p class="section-head__aside" data-reveal data-delay="120">Шесть коротких роликов с прошедших вечеров. На телефоне показ запускается сам, на компьютере — кнопкой. Ролики сменяют друг друга по очереди.</p>
         </div>
 
         <div class="video-carousel" data-carousel>
@@ -226,13 +226,6 @@
                  aria-label="Видео: свечи, краски и процесс создания бомбочек">
             <source src="../assets/video/events/ev-video-01.mp4" type="video/mp4">
           </video>
-          <button class="video-card__play" type="button" aria-label="Смотреть видео: атмосфера арт-девичника">
-            <span>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                <path d="M8 5.5v13l11-6.5-11-6.5z"/>
-              </svg>
-            </span>
-          </button>
         </figure>
 
         <figure class="video-card" data-video-card>
@@ -244,13 +237,6 @@
                  aria-label="Видео: гости с расписанными сумками и шарами">
             <source src="../assets/video/events/ev-video-02.mp4" type="video/mp4">
           </video>
-          <button class="video-card__play" type="button" aria-label="Смотреть видео: день рождения в студии">
-            <span>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                <path d="M8 5.5v13l11-6.5-11-6.5z"/>
-              </svg>
-            </span>
-          </button>
         </figure>
 
         <figure class="video-card" data-video-card>
@@ -262,13 +248,6 @@
                  aria-label="Видео: участницы пишут картины за большим столом">
             <source src="../assets/video/events/ev-video-03.mp4" type="video/mp4">
           </video>
-          <button class="video-card__play" type="button" aria-label="Смотреть видео: мастер-класс по живописи">
-            <span>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                <path d="M8 5.5v13l11-6.5-11-6.5z"/>
-              </svg>
-            </span>
-          </button>
         </figure>
 
         <figure class="video-card" data-video-card>
@@ -280,13 +259,6 @@
                  aria-label="Видео: рисуем лимоны на холсте">
             <source src="../assets/video/events/ev-video-04.mp4" type="video/mp4">
           </video>
-          <button class="video-card__play" type="button" aria-label="Смотреть видео: Мастер-класс «Лимончелло»">
-            <span>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                <path d="M8 5.5v13l11-6.5-11-6.5z"/>
-              </svg>
-            </span>
-          </button>
         </figure>
 
         <figure class="video-card" data-video-card>
@@ -298,13 +270,6 @@
                  aria-label="Видео: светящиеся панно в тёмном зале">
             <source src="../assets/video/events/ev-video-05.mp4" type="video/mp4">
           </video>
-          <button class="video-card__play" type="button" aria-label="Смотреть видео: Мастер-класс «Луна»">
-            <span>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                <path d="M8 5.5v13l11-6.5-11-6.5z"/>
-              </svg>
-            </span>
-          </button>
         </figure>
 
         <figure class="video-card" data-video-card>
@@ -316,17 +281,28 @@
                  aria-label="Видео: гости рисуют и расписывают сумки за столом">
             <source src="../assets/video/events/ev-video-06.mp4" type="video/mp4">
           </video>
-          <button class="video-card__play" type="button" aria-label="Смотреть видео: вечер в студии">
-            <span>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                <path d="M8 5.5v13l11-6.5-11-6.5z"/>
-              </svg>
-            </span>
-          </button>
         </figure>
           </div>
 
-          <div class="video-carousel__nav">
+          <div class="reel-controls">
+            <button class="reel-toggle" type="button" data-reel-toggle aria-label="Смотреть ролики">
+              <svg class="reel-toggle__play" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M8 5.5v13l11-6.5-11-6.5z"/>
+              </svg>
+              <svg class="reel-toggle__pause" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M7 5h3.2v14H7zM13.8 5H17v14h-3.2z"/>
+              </svg>
+            </button>
+
+            <ol class="reel-dots" data-reel-dots aria-label="Ролики">
+              <li><button class="reel-dot" type="button" data-go="0" aria-label="Ролик 1: атмосфера вечера"><span class="reel-dot__fill"></span></button></li>
+              <li><button class="reel-dot" type="button" data-go="1" aria-label="Ролик 2: день рождения"><span class="reel-dot__fill"></span></button></li>
+              <li><button class="reel-dot" type="button" data-go="2" aria-label="Ролик 3: живопись"><span class="reel-dot__fill"></span></button></li>
+              <li><button class="reel-dot" type="button" data-go="3" aria-label="Ролик 4: мастер-класс «Лимончелло»"><span class="reel-dot__fill"></span></button></li>
+              <li><button class="reel-dot" type="button" data-go="4" aria-label="Ролик 5: мастер-класс «Луна»"><span class="reel-dot__fill"></span></button></li>
+              <li><button class="reel-dot" type="button" data-go="5" aria-label="Ролик 6: вечер в студии"><span class="reel-dot__fill"></span></button></li>
+            </ol>
+
             <button class="video-carousel__sound" type="button" data-sound-toggle aria-pressed="false" aria-label="Включить звук во всех видео">
               <svg class="icon-off" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
                 <path d="M11 5L6 9H3v6h3l5 4V5z"/>
@@ -336,21 +312,8 @@
                 <path d="M11 5L6 9H3v6h3l5 4V5z"/>
                 <path d="M15.5 8.5a5 5 0 010 7M18 6a9 9 0 010 12"/>
               </svg>
-              <span data-sound-label>Звук выключен</span>
+              <span class="reel-sound-label" data-sound-label>Звук выключен</span>
             </button>
-
-            <div class="video-carousel__arrows">
-              <button class="video-carousel__arrow" type="button" data-carousel-prev aria-label="Предыдущее видео">
-                <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true">
-                  <path d="M10 2L4 8l6 6"/>
-                </svg>
-              </button>
-              <button class="video-carousel__arrow" type="button" data-carousel-next aria-label="Следующее видео">
-                <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true">
-                  <path d="M6 2l6 6-6 6"/>
-                </svg>
-              </button>
-            </div>
           </div>
         </div>
       </div>
