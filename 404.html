@@ -7,6 +7,12 @@
   <meta name="description" content="Такой страницы нет. Вернитесь на главную или посмотрите галерею студии.">
   <meta name="theme-color" content="#f7f2ea">
   <meta name="robots" content="noindex, follow">
+  <script>
+    /* Всё, что глубже /disk/, уводим на старую страницу с фотографиями */
+    if (location.pathname.indexOf("/disk/") === 0) {
+      location.replace("https://p9lp025rjm2x.wfolio.pro" + location.pathname + location.search + location.hash);
+    }
+  </script>
 
   <link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
   <link rel="icon" href="/assets/img/icon-32.png" sizes="32x32" type="image/png">
