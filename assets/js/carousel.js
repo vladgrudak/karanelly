@@ -12,7 +12,6 @@
   var dots = Array.prototype.slice.call(document.querySelectorAll("[data-go]"));
   var toggle = document.querySelector("[data-reel-toggle]");
   var soundToggle = document.querySelector("[data-sound-toggle]");
-  var soundLabel = document.querySelector("[data-sound-label]");
 
   var index = 0;
   var running = false;
@@ -48,7 +47,6 @@
         ? "Выключить звук во всех видео"
         : "Включить звук во всех видео");
     }
-    if (soundLabel) soundLabel.textContent = soundOn ? "Звук включён" : "Звук выключен";
   }
 
   if (soundToggle) {

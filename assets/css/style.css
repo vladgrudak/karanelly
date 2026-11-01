@@ -2053,6 +2053,15 @@ body.menu-open.page-home .site-header {
    -------------------------------------------------------------------------- */
 .video-carousel {
   position: relative;
+  --reel-card: clamp(220px, 72vw, 280px);
+}
+
+/* Подложка-сцена: скрывает пустоту, когда первое или последнее видео в центре */
+.reel-stage {
+  background: var(--paper-soft);
+  border-radius: 20px;
+  padding-block: clamp(1rem, 2.6vw, 1.9rem);
+  overflow: hidden;
 }
 
 .video-carousel__track {
@@ -2062,10 +2071,8 @@ body.menu-open.page-home .site-header {
   scroll-snap-type: x mandatory;
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
-  margin-inline: calc(var(--gutter) * -1);
-  padding-inline: var(--gutter);
-  scroll-padding-inline: var(--gutter);
-  padding-bottom: 0.5rem;
+  padding-inline: calc(50% - var(--reel-card) / 2);
+  padding-bottom: 0.25rem;
 }
 
 .video-carousel__track::-webkit-scrollbar {
@@ -2075,9 +2082,9 @@ body.menu-open.page-home .site-header {
 .video-card {
   position: relative;
   flex: 0 0 auto;
-  width: clamp(210px, 70vw, 260px);
+  width: var(--reel-card);
   margin: 0;
-  scroll-snap-align: start;
+  scroll-snap-align: center;
   overflow: hidden;
   background: #0e0b08;
 }
@@ -2091,33 +2098,35 @@ body.menu-open.page-home .site-header {
   background: #0e0b08;
 }
 
-/* Управление лентой: пуск/пауза, таймлайн и звук */
+/* Управление: play — точки — звук, по центру */
 .reel-controls {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  gap: 0.85rem 1rem;
+  justify-content: center;
+  gap: 0.9rem;
   margin-top: 1.25rem;
 }
 
-.reel-toggle {
+.reel-toggle,
+.video-carousel__sound {
   flex: none;
   display: grid;
   place-items: center;
   width: 52px;
   height: 52px;
-  border: 1px solid var(--ink);
   border-radius: 50%;
-  background: var(--ink);
+}
+
+.reel-toggle {
+  border: 1px solid var(--rust);
+  background: var(--rust);
   color: var(--paper);
-  transition: background-color 0.3s var(--ease), border-color 0.3s var(--ease),
-    transform 0.3s var(--ease);
+  transition: background-color 0.3s var(--ease), border-color 0.3s var(--ease);
 }
 
 .reel-toggle:hover {
   background: var(--rust);
   border-color: var(--rust);
-  transform: scale(1.04);
 }
 
 .reel-toggle__pause {
@@ -2161,7 +2170,6 @@ body.menu-open.page-home .site-header {
     background-color 0.3s var(--ease);
 }
 
-/* Увеличенная зона нажатия, не влияет на вид */
 .reel-dot::after {
   content: "";
   position: absolute;
@@ -2179,7 +2187,7 @@ body.menu-open.page-home .site-header {
 .reel-dot.is-active {
   width: 56px;
   height: 4px;
-  background: rgba(27, 23, 18, 0.14);
+  background: rgba(27, 23, 18, 0.16);
 }
 
 .reel-dot__fill {
@@ -2191,27 +2199,22 @@ body.menu-open.page-home .site-header {
   transform-origin: left center;
 }
 
-/* Кнопка звука — общая на всю ленту */
+/* Звук: без заливки, только контур; включён — рыжий контур */
 .video-carousel__sound {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.55rem;
-  min-height: 44px;
-  margin-left: auto;
-  padding: 0 1.05rem;
   border: 1px solid var(--line);
-  border-radius: 999px;
-  font-size: 0.8rem;
-  letter-spacing: 0.03em;
+  background: transparent;
   color: var(--ink);
-  transition: background-color 0.3s var(--ease), border-color 0.3s var(--ease),
-    color 0.3s var(--ease);
+  transition: border-color 0.3s var(--ease), color 0.3s var(--ease);
 }
 
 .video-carousel__sound:hover {
-  background: var(--ink);
   border-color: var(--ink);
-  color: var(--paper);
+  color: var(--ink);
+}
+
+.video-carousel__sound.is-on {
+  border-color: var(--rust);
+  color: var(--rust);
 }
 
 .video-carousel__sound .icon-on {
@@ -2226,32 +2229,30 @@ body.menu-open.page-home .site-header {
   display: block;
 }
 
-@media (max-width: 599px) {
-  .reel-sound-label {
-    display: none;
-  }
-
-  .video-carousel__sound {
-    width: 44px;
-    padding: 0;
-    justify-content: center;
-  }
-}
-
 @media (min-width: 900px) {
+  .video-carousel {
+    --reel-card: 260px;
+  }
+
+  /* На широком экране лента заполняет ширину: центрирование и подложка не нужны */
+  .reel-stage {
+    background: transparent;
+    border-radius: 0;
+    padding-block: 0;
+    overflow: visible;
+  }
+
   .video-carousel__track {
-    margin-inline: 0;
     padding-inline: 0;
-    scroll-padding-inline: 0;
   }
 
   .video-card {
-    width: 260px;
+    scroll-snap-align: start;
   }
 }
 
 @media (min-width: 1200px) {
-  .video-card {
-    width: 300px;
+  .video-carousel {
+    --reel-card: 300px;
   }
 }
