@@ -1,0 +1,16 @@
+name: dnscheck
+on: workflow_dispatch
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: DNS
+        run: |
+          echo "== NS =="; dig +short NS karanelly.space
+          echo "== A =="; dig +short A karanelly.space
+          echo "== AAAA =="; dig +short AAAA karanelly.space
+          echo "== www CNAME =="; dig +short CNAME www.karanelly.space
+          echo "== www A =="; dig +short A www.karanelly.space
+          echo "== trace tail =="; dig +trace karanelly.space A 2>/dev/null | tail -8
+          echo "== HTTP =="; curl -sI -m 20 http://karanelly.space/ | head -5
+          echo "== resolver =="; cat /etc/resolv.conf
