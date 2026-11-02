@@ -3,3 +3,6 @@
 # Локальные секреты и служебное
 .deploy.env
 __pycache__/
+
+# IDEA
+.idea
