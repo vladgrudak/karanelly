@@ -12,6 +12,7 @@
 
 import calendar
 import os
+import socket
 import ssl
 import sys
 import time
@@ -28,6 +29,9 @@ EXCLUDE_FILES = {
     "README.md",
     ".DS_Store",
 }
+
+# Ошибки, после которых имеет смысл переподключиться и повторить файл.
+NETWORK_ERRORS = (socket.timeout, TimeoutError, ConnectionError, EOFError, OSError)
 
 
 def load_env(path):
@@ -54,6 +58,28 @@ def local_files():
             yield os.path.relpath(full, ROOT).replace(os.sep, "/"), full
 
 
+def connect_ftp(host, user, password, use_tls, verify, timeout):
+    if use_tls:
+        context = ssl.create_default_context()
+        if not verify:
+            context.check_hostname = False
+            context.verify_mode = ssl.CERT_NONE
+        ftp = FTP_TLS(timeout=timeout, context=context)
+        ftp.connect(host, 21)
+        ftp.login(user, password)
+        ftp.prot_p()
+    else:
+        ftp = FTP(timeout=timeout)
+        ftp.connect(host, 21)
+        ftp.login(user, password)
+
+    ftp.set_pasv(True)
+    # Без бинарного режима сервер не отвечает на SIZE, и все файлы
+    # выглядят «изменёнными». Это же защищает видео и картинки от порчи.
+    ftp.voidcmd("TYPE I")
+    return ftp
+
+
 def ensure_dirs(ftp, remote_path):
     parts = remote_path.split("/")[:-1]
     current = ""
@@ -72,13 +98,18 @@ def remote_uptodate(ftp, path, local_path):
         return False
     if size != os.path.getsize(local_path):
         return False
+
     try:
         response = ftp.sendcmd("MDTM " + path)
         if response.startswith("213"):
             remote_ts = calendar.timegm(time.strptime(response[4:].strip(), "%Y%m%d%H%M%S"))
-            return os.path.getmtime(local_path) <= remote_ts + 120
+            if remote_ts < 946684800:  # 2000-01-01: сервер вернул мусор вместо времени
+                return True
+            return os.path.getmtime(local_path) <= remote_ts + 300
     except (error_perm, ValueError):
         pass
+
+    # Время узнать не удалось — доверяем совпадению размера.
     return True
 
 
@@ -131,6 +162,7 @@ def main():
     remote_dir = setting("REMOTE_DIR", "www/karanelly.space")
     use_tls = setting("FTP_TLS", "1") == "1"
     verify = setting("FTP_VERIFY", "0") == "1"
+    timeout = int(setting("FTP_TIMEOUT", "120"))
     dry_run = setting("DRY_RUN", "0") == "1"
     list_only = setting("LIST_ONLY", "0") == "1"
     do_delete = setting("DELETE", "0") == "1"
@@ -149,64 +181,81 @@ def main():
 
     print("→ " + user + "@" + host + ":" + remote_dir
           + "  (TLS=" + ("да" if use_tls else "нет")
+          + ", timeout=" + str(timeout) + " c"
           + ", dry-run=" + ("да" if dry_run else "нет") + ")")
 
-    if use_tls:
-        context = ssl.create_default_context()
-        if not verify:
-            context.check_hostname = False
-            context.verify_mode = ssl.CERT_NONE
-        ftp = FTP_TLS(context=context)
-        ftp.connect(host, 21, timeout=30)
-        ftp.login(user, password)
-        ftp.prot_p()
-    else:
-        ftp = FTP(host, timeout=30)
-        ftp.login(user, password)
-
-    ftp.set_pasv(True)
+    def open_ftp():
+        client = connect_ftp(host, user, password, use_tls, verify, timeout)
+        client.cwd(remote_dir)
+        return client
 
     try:
-        ftp.cwd(remote_dir)
-    except error_perm as exc:
+        ftp = open_ftp()
+    except (error_perm,) + NETWORK_ERRORS as exc:
+        sys.exit("Не удалось подключиться или открыть папку " + remote_dir + ": " + str(exc)
+                 + ". Проверьте FTP_HOST, логин, пароль и REMOTE_DIR.")
+
+    uploaded = 0
+    skipped = 0
+    failed = 0
+
+    for rel, full in files:
+        attempt = 0
+        while True:
+            attempt += 1
+            try:
+                if remote_uptodate(ftp, rel, full):
+                    skipped += 1
+                    break
+                if dry_run:
+                    print("  ↑ " + rel)
+                    uploaded += 1
+                    break
+                ensure_dirs(ftp, rel)
+                with open(full, "rb") as fh:
+                    ftp.storbinary("STOR " + rel, fh, blocksize=262144)
+                uploaded += 1
+                print("  ↑ " + rel)
+                break
+            except error_perm as exc:
+                print("  ! " + rel + ": " + str(exc))
+                failed += 1
+                break
+            except NETWORK_ERRORS as exc:
+                if attempt >= 2:
+                    print("  ! " + rel + ": " + str(exc) + " (повтор не помог)")
+                    failed += 1
+                    break
+                print("  … связь прервалась на " + rel + ", переподключаюсь")
+                try:
+                    ftp.close()
+                except Exception:
+                    pass
+                try:
+                    ftp = open_ftp()
+                except (error_perm,) + NETWORK_ERRORS as reconnect_exc:
+                    print("  ! не удалось переподключиться: " + str(reconnect_exc))
+                    failed += 1
+                    ftp = None
+                    break
+
+        if ftp is None:
+            break
+
+    removed = 0
+    if do_delete and ftp is not None:
+        removed = delete_extra(ftp, {rel for rel, _ in files}, dry_run)
+
+    if ftp is not None:
         try:
             ftp.quit()
         except Exception:
             pass
-        sys.exit("Не удалось открыть папку " + remote_dir + ": " + str(exc)
-                 + ". Проверьте REMOTE_DIR в .deploy.env.")
-
-    uploaded = 0
-    skipped = 0
-    for rel, full in files:
-        try:
-            if remote_uptodate(ftp, rel, full):
-                skipped += 1
-                continue
-            if dry_run:
-                print("  ↑ " + rel)
-                uploaded += 1
-                continue
-            ensure_dirs(ftp, rel)
-            with open(full, "rb") as fh:
-                ftp.storbinary("STOR " + rel, fh, blocksize=65536)
-            uploaded += 1
-            print("  ↑ " + rel)
-        except error_perm as exc:
-            print("  ! " + rel + ": " + str(exc))
-
-    removed = 0
-    if do_delete:
-        removed = delete_extra(ftp, {rel for rel, _ in files}, dry_run)
-
-    try:
-        ftp.quit()
-    except Exception:
-        pass
 
     print("\nГотово: загружено " + str(uploaded)
           + ", без изменений " + str(skipped)
-          + (", удалено " + str(removed) if do_delete else "") + ".")
+          + (", удалено " + str(removed) if do_delete else "")
+          + (", ошибок " + str(failed) if failed else "") + ".")
     print("Проверьте https://karanelly.space/")
 
 
