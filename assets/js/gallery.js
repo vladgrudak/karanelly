@@ -3,11 +3,14 @@
 (function () {
   "use strict";
 
-  var gallery = document.querySelector("[data-gallery]");
+  var galleries = Array.prototype.slice.call(document.querySelectorAll("[data-gallery]"));
   var box = document.querySelector("[data-lightbox]");
-  if (!gallery || !box) return;
+  if (!galleries.length || !box) return;
 
-  var items = Array.prototype.slice.call(gallery.querySelectorAll("[data-full]"));
+  var items = [];
+  galleries.forEach(function (gallery) {
+    items = items.concat(Array.prototype.slice.call(gallery.querySelectorAll("[data-full]")));
+  });
   if (!items.length) return;
 
   var imgEl = box.querySelector("[data-lightbox-img]");

@@ -6,3 +6,6 @@ __pycache__/
 
 # IDEA
 .idea
+
+# Исходники новых фото (не коммитим, обрабатываем в assets/img)
+newPhoto/

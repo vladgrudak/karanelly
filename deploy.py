@@ -20,7 +20,7 @@ from ftplib import FTP, FTP_TLS, error_perm
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 
-EXCLUDE_DIRS = {".git", ".github", ".well-known", "cgi-bin", "error_docs", ".idea"}
+EXCLUDE_DIRS = {".git", ".github", ".well-known", "cgi-bin", "error_docs", ".idea", "newPhoto"}
 EXCLUDE_FILES = {
     ".deploy.env",
     ".deploy.env.example",
