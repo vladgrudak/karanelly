@@ -252,11 +252,18 @@ def main():
         except Exception:
             pass
 
-    print("\nГотово: загружено " + str(uploaded)
-          + ", без изменений " + str(skipped)
-          + (", удалено " + str(removed) if do_delete else "")
-          + (", ошибок " + str(failed) if failed else "") + ".")
-    print("Проверьте https://karanelly.space/")
+    if dry_run:
+        print("\nСухой прогон: к загрузке " + str(uploaded)
+              + ", без изменений " + str(skipped)
+              + (", к удалению " + str(removed) if do_delete else "")
+              + (", ошибок " + str(failed) if failed else "") + ".")
+        print("Запустите ./deploy.py, чтобы выложить изменения.")
+    else:
+        print("\nГотово: загружено " + str(uploaded)
+              + ", без изменений " + str(skipped)
+              + (", удалено " + str(removed) if do_delete else "")
+              + (", ошибок " + str(failed) if failed else "") + ".")
+        print("Проверьте https://karanelly.space/")
 
 
 if __name__ == "__main__":
