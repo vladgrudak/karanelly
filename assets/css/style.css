@@ -1339,7 +1339,7 @@ body.menu-open.page-home .site-header {
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
-  margin-top: 1rem;
+  /*margin-top: 1rem;*/
   font-size: 0.88rem;
   color: var(--ink-70);
 }
@@ -2265,3 +2265,64 @@ body.menu-open.page-home .site-header {
     --reel-card: 320px;
   }
 }
+
+/* --------------------------------------------------------------------------
+   Праздничные акценты
+   Тема задаётся атрибутом data-theme у <html> (переключатель — assets/js/theme.js).
+   Акценты — псевдоэлементы с маской-иконкой: разметка не меняется, всё
+   убирается одной строкой. Чтобы добавить другой праздник, скопируйте блок
+   [data-theme="ny"], замените ny на свой код (например, feb14) и поставьте
+   этот код в theme.js.
+   -------------------------------------------------------------------------- */
+[data-theme="ny"] {
+  --ny-green: #2f5a45;
+  --ny-sage: #b7d2bf;
+  --ny-gold: #c39a68;
+  --ny-red: #ae512c;
+  --icon-spruce: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2024%2024%27%20fill%3D%27none%27%20stroke%3D%27black%27%20stroke-width%3D%272%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%3E%3Cpath%20d%3D%27M12%203%207%2010h3L6%2016h12l-4-6h3z%27%2F%3E%3Cpath%20d%3D%27M12%2016v4%27%2F%3E%3C%2Fsvg%3E");
+  --icon-flake: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20485%20485%27%3E%3Cpolygon%20points%3D%27451.871%2C308.876%20444.106%2C279.899%20371.14%2C299.45%20272.5%2C242.5%20371.14%2C185.55%20444.106%2C205.101%20451.871%2C176.124%20407.883%2C164.337%20460.011%2C134.24%20445.011%2C108.26%20392.882%2C138.356%20404.669%2C94.368%20375.691%2C86.604%20356.14%2C159.569%20257.5%2C216.519%20257.5%2C102.62%20310.915%2C49.205%20289.702%2C27.992%20257.5%2C60.193%20257.5%2C0%20227.5%2C0%20227.5%2C60.193%20195.298%2C27.992%20174.085%2C49.205%20227.5%2C102.62%20227.5%2C216.519%20128.86%2C159.569%20109.309%2C86.604%2080.331%2C94.368%2092.118%2C138.356%2039.989%2C108.26%2024.989%2C134.24%2077.117%2C164.337%2033.129%2C176.124%2040.894%2C205.101%20113.86%2C185.55%20212.5%2C242.5%20113.86%2C299.45%2040.894%2C279.899%2033.129%2C308.876%2077.117%2C320.663%2024.989%2C350.76%2039.989%2C376.74%2092.118%2C346.644%2080.331%2C390.632%20109.309%2C398.396%20128.86%2C325.431%20227.5%2C268.481%20227.5%2C382.38%20174.085%2C435.795%20195.298%2C457.008%20227.5%2C424.807%20227.5%2C485%20257.5%2C485%20257.5%2C424.807%20289.702%2C457.008%20310.915%2C435.795%20257.5%2C382.38%20257.5%2C268.481%20356.14%2C325.431%20375.691%2C398.396%20404.669%2C390.632%20392.882%2C346.644%20445.011%2C376.74%20460.011%2C350.76%20407.883%2C320.663%27%2F%3E%3C%2Fsvg%3E");
+}
+
+[data-theme="ny"] .logo::after,
+[data-theme="ny"] .hero .eyebrow::after,
+[data-theme="ny"] .gallery-head__title::after {
+  content: "";
+  display: inline-block;
+  flex: none;
+  background-color: currentColor;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+}
+
+/* Логотип — снежинка */
+[data-theme="ny"] .logo::after {
+  width: 0.68em;
+  height: 0.68em;
+  color: var(--ny-gold);
+  -webkit-mask-image: var(--icon-flake);
+  mask-image: var(--icon-flake);
+  opacity: 0.9;
+}
+
+/* Надзаголовок на главной — ёлочка */
+[data-theme="ny"] .hero .eyebrow::after {
+  width: 1.1em;
+  height: 1.1em;
+  color: var(--ny-sage);
+  -webkit-mask-image: var(--icon-spruce);
+  mask-image: var(--icon-spruce);
+}
+
+/* Сезонный блок в галерее — ёлочка */
+[data-theme="ny"] .gallery-head__title::after {
+  width: 0.7em;
+  height: 0.7em;
+  color: var(--ny-green);
+  -webkit-mask-image: var(--icon-spruce);
+  mask-image: var(--icon-spruce);
+}
+
