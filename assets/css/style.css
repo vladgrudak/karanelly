@@ -1298,20 +1298,6 @@ body.menu-open.page-home .site-header {
   background: #ffffff;
 }
 
-.scroll-hint {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 0.7rem;
-  font-size: 0.72rem;
-  letter-spacing: 0.06em;
-  color: var(--ink-55);
-}
-
-.scroll-hint svg {
-  flex: none;
-}
-
 .widget-fallback {
   display: flex;
   flex-wrap: wrap;
@@ -1724,11 +1710,6 @@ body.menu-open.page-home .site-header {
     display: none;
   }
 
-  .widget-scroll iframe {
-    min-width: 980px;
-    height: 820px;
-  }
-
   .lightbox__nav {
     top: auto;
     bottom: 0.5rem;
@@ -1835,9 +1816,6 @@ body.menu-open.page-home .site-header {
 }
 
 @media (min-width: 901px) {
-  .scroll-hint {
-    display: none;
-  }
 }
 
 .season {
