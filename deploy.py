@@ -27,6 +27,7 @@ EXCLUDE_FILES = {
     "deploy.py",
     "deploy.sh",
     "README.md",
+    ".gitignore",
     ".DS_Store",
 }
 
@@ -185,9 +186,21 @@ def main():
           + ", dry-run=" + ("да" if dry_run else "нет") + ")")
 
     def open_ftp():
-        client = connect_ftp(host, user, password, use_tls, verify, timeout)
-        client.cwd(remote_dir)
-        return client
+        last = None
+        for attempt in range(1, 4):
+            try:
+                client = connect_ftp(host, user, password, use_tls, verify, timeout)
+                client.cwd(remote_dir)
+                return client
+            except error_perm:
+                raise
+            except NETWORK_ERRORS as exc:
+                last = exc
+                if attempt < 3:
+                    print("  … не удалось подключиться (" + str(attempt) + "/3): " + str(exc)
+                          + ", повтор через 5 с")
+                    time.sleep(5)
+        raise last
 
     try:
         ftp = open_ftp()
