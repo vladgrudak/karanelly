@@ -662,6 +662,40 @@ body.menu-open.page-home .site-header {
   max-width: 20ch;
 }
 
+/* Компактная шапка галереи: сезонный блок не должен выглядеть вторым героем */
+.gallery-head {
+  margin-bottom: clamp(1.25rem, 2.5vw, 1.75rem);
+}
+
+.gallery-head .eyebrow {
+  margin-bottom: 0.55rem;
+}
+
+.gallery-head__row {
+  display: grid;
+  gap: 0.35rem 2rem;
+}
+
+.gallery-head__title {
+  font-family: var(--font-display);
+  font-size: clamp(1.35rem, 2vw, 1.8rem);
+  font-weight: 500;
+  line-height: 1.1;
+}
+
+.gallery-head__note {
+  max-width: 46ch;
+  font-size: 0.9rem;
+  color: var(--ink-70);
+}
+
+@media (min-width: 768px) {
+  .gallery-head__row {
+    grid-template-columns: auto 1fr;
+    align-items: baseline;
+  }
+}
+
 /* Вступление на главной */
 .intro {
   display: grid;
