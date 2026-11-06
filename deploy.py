@@ -26,6 +26,7 @@ EXCLUDE_FILES = {
     ".deploy.env.example",
     "deploy.py",
     "deploy.sh",
+    "bump-assets.py",
     "README.md",
     ".gitignore",
     ".DS_Store",
