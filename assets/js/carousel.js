@@ -21,6 +21,19 @@
   var scrollTimer = 0;
   var soundOn = false;
 
+  /* Громкость роликов: 0…1, то есть 0.5 = 50 %. Меняется здесь.
+     На iPhone Safari громкость программно не регулируется — там работает
+     только кнопка громкости на самом устройстве. */
+  var VOLUME = 0.5;
+
+  function setVolume(video) {
+    try {
+      video.volume = VOLUME;
+    } catch (error) {
+      /* некоторые мобильные браузеры игнорируют установку громкости */
+    }
+  }
+
   function videoAt(i) {
     var card = cards[i];
     return card ? card.querySelector("video") : null;
@@ -37,7 +50,9 @@
   function applySound() {
     cards.forEach(function (card) {
       var video = card.querySelector("video");
-      if (video) video.muted = !soundOn;
+      if (!video) return;
+      video.muted = !soundOn;
+      setVolume(video);
     });
 
     if (soundToggle) {
@@ -95,6 +110,7 @@
     if (video) {
       video.currentTime = 0;
       video.muted = !soundOn;
+      setVolume(video);
       video.loop = false;
       video.controls = false;
       var promise = video.play();

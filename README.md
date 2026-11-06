@@ -122,7 +122,10 @@ ffmpeg -i new.mov -vf "scale=720:-2,fps=30" -c:v libx264 -crf 30 -preset slow \
 метаданных, со `faststart`.
 
 Звук выровнен по громкости: исходники расходились на 20 дБ (−34…−14 LUFS), все
-приведены к −16 LUFS через двухпроходный `loudnorm` (linear), AAC 128 kbps.
+приведены к −22 LUFS через двухпроходный `loudnorm` (linear), AAC 128 kbps.
+Сделано тише специально: на iPhone Safari громкость видео программно не меняется,
+и −22 LUFS не бьёт по ушам при полной громкости телефона. На остальных устройствах
+дополнительно работает `VOLUME` в `assets/js/carousel.js` (0…1, сейчас 0.5).
 
 Лента работает как Apple «highlights»: на телефоне активная карточка стоит по центру экрана, у каждой карточки своя светлая
 подложка, а лента тянется от края до края. Под роликами один таймлайн из точек.
@@ -134,7 +137,7 @@ ffmpeg -i new.mov -vf "scale=720:-2,fps=30" -c:v libx264 -crf 30 -preset slow \
 Если добавляете ролик — сначала измерьте, потом кодируйте с измеренными значениями:
 
 ```bash
-ffmpeg -i in.mp4 -af loudnorm=I=-16:TP=-1.5:LRA=11:print_format=json -vn -f null -
+ffmpeg -i in.mp4 -af loudnorm=I=-22:TP=-2:LRA=11:print_format=json -vn -f null -
 ffmpeg -i in.mp4 -vf "scale=720:1280:force_original_aspect_ratio=decrease,pad=720:1280:(ow-iw)/2:(oh-ih)/2,fps=30" \
   -c:v libx264 -crf 30 -preset slow -pix_fmt yuv420p -movflags +faststart \
   -c:a aac -b:a 128k -ar 44100 -ac 2 -map_metadata -1 out.mp4
